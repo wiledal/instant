@@ -186,9 +186,9 @@
               "teams@pm.instantdb.com")})
 
 (defn email-provider
-  "Explicit email-provider override for self-hosted deployments.
-   INSTANT_EMAIL_PROVIDER supports postmark, sendgrid, resend and postal.
-   Wins over token auto-detection when set. nil when unset."
+  "Explicit email-provider override for self-hosted deployments
+   (INSTANT_EMAIL_PROVIDER = \"postmark\" | \"sendgrid\" | \"resend\"). Wins over token
+   auto-detection when set. nil when unset."
   []
   (some-> (System/getenv "INSTANT_EMAIL_PROVIDER")
           string/trim
@@ -199,28 +199,11 @@
 (defn resend-send-enabled? []
   (not (string/blank? (resend-token))))
 
-(defn postal-api-url []
-  (some-> (System/getenv "POSTAL_API_URL") string/trim not-empty))
-
-(defn postal-api-key []
-  (some-> (System/getenv "POSTAL_API_KEY") string/trim not-empty))
-
-(defn postal-send-enabled? []
-  (and (some? (postal-api-url)) (some? (postal-api-key))))
-
 (defn sendgrid-send-enabled? []
   (not (string/blank? (sendgrid-token))))
 
 (defn postmark-send-enabled? []
   (not (string/blank? (postmark-token))))
-
-(defn email-send-enabled? []
-  (case (email-provider)
-    :postal (postal-send-enabled?)
-    :resend (resend-send-enabled?)
-    :sendgrid (sendgrid-send-enabled?)
-    :postmark (postmark-send-enabled?)
-    (or (resend-send-enabled?) (sendgrid-send-enabled?) (postmark-send-enabled?))))
 
 (defn postmark-admin-enabled? []
   (not (string/blank? (postmark-account-token))))

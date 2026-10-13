@@ -3,7 +3,6 @@
    [instant.config :as config]
    [instant.flags :as flags]
    [instant.postmark :as postmark]
-   [instant.postal :as postal]
    [instant.resend :as resend]
    [instant.sendgrid :as sendgrid]))
 
@@ -14,9 +13,6 @@
 (defn send-structured! [req]
   (cond
     ;; Explicit provider override (self-hosted)
-    (= :postal (config/email-provider))
-    (postal/send! req)
-
     (= :resend (config/email-provider))
     (resend/send! req)
 
