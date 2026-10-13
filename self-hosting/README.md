@@ -4,6 +4,9 @@ Documentation for self hosting is available at [www.instantdb.com/docs/self-host
 
 See [UPGRADE_DB.md](UPGRADE_DB.md) for instructions on upgrading existing backends from postgres 16 to 17.
 
+See [POSTAL.md](POSTAL.md) to configure this fork to send email through a
+self-hosted Postal server and preserve signing keys across VM replacements.
+
 ## Run without file storage
 
 This fork can run without S3 credentials. From this directory, run:
