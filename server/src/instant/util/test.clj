@@ -343,7 +343,8 @@
   `(binding [s3/*s3-mock* {:upload ~upload
                            :get-object-metadata ~get-object-metadata
                            :location-id-url ~location-id-url}]
-     ~@body))
+     (with-redefs [config/storage-enabled? (constantly true)]
+       ~@body)))
 
 (defmacro with-test-replication-slot
   "Spins up a temporary wal2json replication slot and a wal worker that

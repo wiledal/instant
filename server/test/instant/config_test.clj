@@ -3,6 +3,22 @@
             [instant.config :as config]
             [instant.util.crypt :as crypt-util]))
 
+(deftest optional-storage-test
+  (testing "missing, blank, or incomplete credentials disable storage"
+    (doseq [[access secret aws-access aws-secret]
+            [[nil nil nil nil] ["" " " nil nil] ["key" nil nil nil]
+             [nil "secret" nil nil] [nil nil "key" nil]
+             [nil nil nil "secret"] ["key" nil nil "secret"]]]
+      (is (false? (config/storage-enabled? nil access secret aws-access aws-secret)))))
+  (testing "either complete credential pair enables storage"
+    (is (true? (config/storage-enabled? nil "key" "secret" nil nil)))
+    (is (true? (config/storage-enabled? " " nil nil "key" "secret"))))
+  (testing "explicit settings support role credentials and disabling configured storage"
+    (is (true? (config/storage-enabled? " TRUE " nil nil nil nil)))
+    (is (false? (config/storage-enabled? "false" "key" "secret" "key" "secret")))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"must be true or false"
+                          (config/storage-enabled? "yes" nil nil nil nil)))))
+
 (deftest google-oauth-client-test
   (let [config-client {:client-id "config-client-id"
                        :client-secret (crypt-util/obfuscate "config-client-secret")}]

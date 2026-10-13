@@ -140,6 +140,13 @@ Server https address is https://dev.instantdb.com:8889
 
 If you want to make any changes to your configuration, update the `resources/config/override.edn` file that was created when you ran `make docker-compose` or `make bootstrap-oss`. `src/instant/config_edn.clj` has a spec that describes the data for the file, or you can look at `resources/config/dev.edn` for an example.
 
+File storage is optional. Without a complete S3 credential pair in the config
+or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, the server disables storage
+and stores new WAL history in Postgres. Set `INSTANT_STORAGE_ENABLED=false` to
+force storage off, or `INSTANT_STORAGE_ENABLED=true` to use an AWS profile or
+IAM role. See [the self-hosting instructions](../self-hosting/README.md#run-without-file-storage)
+for a Compose setup without S3 or MinIO.
+
 # Questions?
 
 If you have any questions, feel free to drop us a line on our [Discord](https://discord.com/invite/VU53p7uQcE).

@@ -5,6 +5,12 @@
             [clojure.test :refer [deftest testing is]]
             [clojure.walk :as w]))
 
+(deftest production-storage-credentials-are-optional
+  (let [config (config-edn/read-config :prod)]
+    (is (config-edn/valid-config?
+         true (dissoc config :cloudfront-signing-key
+                      :s3-storage-access-key :s3-storage-secret-key)))))
+
 (defn key-id->int
   "Converts a 4-byte key ID to an unsigned 32-bit integer"
   [^bytes key-id]

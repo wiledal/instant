@@ -141,16 +141,20 @@
 (defonce schedule (atom nil))
 
 (defn start []
-  (log/info "Starting storage sweeper daemon")
-  (swap! schedule (fn [curr-schedule]
-                    (if curr-schedule
-                      curr-schedule
-                      (chime-core/chime-at
-                       (chime-core/periodic-seq
-                        (Instant/now)
-                        (Duration/ofMinutes 60))
-                       (fn [_time]
-                         (handle-sweep! {})))))))
+  (if-not (config/storage-enabled?)
+    (log/info "File storage is disabled; skipping storage sweeper")
+    (do
+      (log/info "Starting storage sweeper daemon")
+      (swap! schedule
+             (fn [curr-schedule]
+               (if curr-schedule
+                 curr-schedule
+                 (chime-core/chime-at
+                  (chime-core/periodic-seq
+                   (Instant/now)
+                   (Duration/ofMinutes 60))
+                  (fn [_time]
+                    (handle-sweep! {})))))))))
 
 (defn stop []
   (when-let [curr-schedule @schedule]

@@ -119,6 +119,7 @@
 (defn consume-upload-url!
   "Consume an Instant upload url and if it's valid kicks off our upload process"
   [{:keys [upload-id content-type content-length]} file]
+  (storage-beta/assert-storage-configured!)
   (let [{app-id :app_id path :path expired-at :expired_at}
         (app-upload-url-model/consume! {:upload-id upload-id})]
     (when (or (not expired-at)

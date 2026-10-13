@@ -28,7 +28,8 @@
    (org.postgresql.replication LogSequenceNumber)))
 
 (defn store-to-s3? []
-  (and config/s3-wal-history-bucket-name
+  (and (config/storage-enabled?)
+       config/s3-wal-history-bucket-name
        (not (flags/toggled? :store-history-in-db))))
 
 (defn s3-key

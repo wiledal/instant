@@ -491,8 +491,9 @@
         (join-room-logger/start))
       (with-log-init :indexing-jobs
         (indexing-jobs/start))
-      (with-log-init :app-backup-jobs
-        (app-backup-jobs/start))
+      (when (config/storage-enabled?)
+        (with-log-init :app-backup-jobs
+          (app-backup-jobs/start)))
       (with-log-init :storage-sweeper
         (storage-sweeper/start))
       (with-log-init :hard-deletion-sweeper
@@ -515,7 +516,8 @@
         (with-log-init :welcome-email
           (welcome-email/start)))
       (when (and (= (config/get-env) :prod)
-                 (config/aws-env?))
+                 (config/aws-env?)
+                 (config/storage-enabled?))
         (with-log-init :backup
           (backup/start)))
 

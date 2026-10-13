@@ -15,6 +15,7 @@
    [instant.flags :as flags]
    [instant.jdbc.aurora :as aurora]
    [instant.jdbc.sql :as sql]
+   [instant.storage.beta :as storage-beta]
    [instant.util.async :as ua]
    [instant.util.exception :as ex]
    [instant.util.tracer :as tracer])
@@ -214,6 +215,7 @@
    job row. Throws a validation error if the app already has a backup in
    flight."
   [{:keys [app-id description]}]
+  (storage-beta/assert-storage-configured!)
   (let [job (create-job! {:app-id app-id
                           :description description})]
     (submit!)

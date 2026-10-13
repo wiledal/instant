@@ -112,6 +112,27 @@
 (defn s3-storage-secret-key []
   (some-> @config-map :s3-storage-secret-key crypt-util/secret-value))
 
+(defn storage-enabled?
+  "Storage is optional unless credentials are configured. Set
+   INSTANT_STORAGE_ENABLED=true to use an AWS profile or IAM role, or false
+   to disable storage even when credentials are present."
+  ([]
+   (storage-enabled? (System/getenv "INSTANT_STORAGE_ENABLED")
+                     (s3-storage-access-key)
+                     (s3-storage-secret-key)
+                     (System/getenv "AWS_ACCESS_KEY_ID")
+                     (System/getenv "AWS_SECRET_ACCESS_KEY")))
+  ([enabled access-key secret-key aws-access-key aws-secret-key]
+   (let [enabled (some-> enabled string/trim not-empty string/lower-case)
+         present? #(not (string/blank? %))]
+     (case enabled
+       "true" true
+       "false" false
+       nil (boolean (or (and (present? access-key) (present? secret-key))
+                        (and (present? aws-access-key) (present? aws-secret-key))))
+       (throw (ex-info "INSTANT_STORAGE_ENABLED must be true or false."
+                       {:value enabled}))))))
+
 (defn s3-endpoint []
   (or (System/getenv "S3_ENDPOINT")
       (some-> @config-map :s3-endpoint)))

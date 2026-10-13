@@ -3,6 +3,7 @@
    [clojure.string :as string]
    [instant.config :as config]
    [instant.flags :as flags]
+   [instant.storage.beta :as storage-beta]
    [instant.util.date :as date-util]
    [instant.util.s3 :as s3-util]
    [instant.util.tracer :as tracer])
@@ -70,6 +71,7 @@
 (defn s3-client
   "Standard blocking S3 client. We use this for most operations."
   ^S3Client []
+  (storage-beta/assert-storage-configured!)
   @s3-client*)
 
 (declare s3-async-client*)
@@ -85,6 +87,7 @@
 (defn s3-async-client
   "Async S3 Client. Useful when you want to asynchronously upload streams to S3"
   ^S3AsyncClient []
+  (storage-beta/assert-storage-configured!)
   @s3-async-client*)
 
 (def multipart-part-size
@@ -122,6 +125,7 @@
    Deliberately does not use the crt client because we've seen it hang and spike
    cpu usage in development."
   ^S3AsyncClient []
+  (storage-beta/assert-storage-configured!)
   @s3-async-export-client*)
 
 (declare s3-transfer-manager*)
@@ -137,6 +141,7 @@
 (defn s3-transfer-manager
   "S3 Transfer Manager for multipart uploads"
   ^S3TransferManager []
+  (storage-beta/assert-storage-configured!)
   @s3-transfer-manager*)
 
 (def ^:private presign-creds*
@@ -166,6 +171,7 @@
    Note: you need to make sure that both these credentials, and the default credentials,
    have the necessary permissions to access the same S3 bucket."
   []
+  (storage-beta/assert-storage-configured!)
   @presign-creds*)
 
 (def bucket-name config/s3-bucket-name)
@@ -311,17 +317,18 @@
 (defn location-id-url [app-id location-id]
   (if-let [mock *s3-mock*]
     ((:location-id-url mock) app-id location-id)
-    (let [signing-instant (bucketed-signing-instant)
-          duration (Duration/ofDays 7)
-          object-key (->object-key app-id location-id)]
-      (str (s3-util/generate-presigned-url
-            (presign-creds)
-            {:app-id app-id
-             :method :get
-             :bucket-name bucket-name
-             :key object-key
-             :duration duration
-             :signing-instant signing-instant})))))
+    (when (config/storage-enabled?)
+      (let [signing-instant (bucketed-signing-instant)
+            duration (Duration/ofDays 7)
+            object-key (->object-key app-id location-id)]
+        (str (s3-util/generate-presigned-url
+              (presign-creds)
+              {:app-id app-id
+               :method :get
+               :bucket-name bucket-name
+               :key object-key
+               :duration duration
+               :signing-instant signing-instant}))))))
 
 (defn create-signed-download-url! [app-id location-id]
   (when location-id
@@ -360,7 +367,7 @@
   (list-objects-by-app)
   (calculate-app-metrics))
 
-(when (config/aws-env?)
+(when (and (config/aws-env?) (config/storage-enabled?))
   ;; Initialize clients eagerly
   (s3-client)
   (s3-async-client))

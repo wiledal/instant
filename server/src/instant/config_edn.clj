@@ -105,9 +105,6 @@
 ;; Prod config is more restrictive because we don't want to accidentally
 ;; forget to set one of these variables in prod
 (s/def ::config-prod (s/keys :req-un [::aead-keyset
-                                      ::cloudfront-signing-key
-                                      ::s3-storage-access-key
-                                      ::s3-storage-secret-key
                                       ::database-cluster-id
                                       ::postmark-token
                                       ::postmark-account-token
@@ -120,7 +117,10 @@
                                       ::hybrid-keyset
                                       ::rate-limit-hmac-key
                                       ::webhook-keyset]
-                             :opt-un [::next-database-cluster-id
+                             :opt-un [::cloudfront-signing-key
+                                      ::s3-storage-access-key
+                                      ::s3-storage-secret-key
+                                      ::next-database-cluster-id
                                       ::shared-oauth-clients]))
 
 (defn config-spec [prod?]
